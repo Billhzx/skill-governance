@@ -1,0 +1,22 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="650" viewBox="0 0 1200 650" role="img" aria-labelledby="title desc">
+  <title id="title">Skill Governance 真实扫描预览</title>
+  <desc id="desc">一次在 Windows 多 Agent 环境中完成的脱敏只读扫描摘要</desc>
+  <rect width="1200" height="650" rx="22" fill="#0d1117"/>
+  <rect x="1" y="1" width="1198" height="648" rx="21" fill="none" stroke="#30363d" stroke-width="2"/>
+  <circle cx="38" cy="34" r="8" fill="#ff5f56"/><circle cx="64" cy="34" r="8" fill="#ffbd2e"/><circle cx="90" cy="34" r="8" fill="#27c93f"/>
+  <text x="120" y="41" fill="#8b949e" font-family="Segoe UI, Microsoft YaHei, sans-serif" font-size="20">skill-governance — Windows 真实扫描（路径已脱敏）</text>
+  <line x1="0" y1="64" x2="1200" y2="64" stroke="#30363d"/>
+  <g font-family="Cascadia Code, Consolas, Microsoft YaHei, monospace" font-size="25">
+    <text x="42" y="112" fill="#7ee787">PS&gt;</text><text x="100" y="112" fill="#e6edf3">python scripts/skill_governance.py scan</text>
+    <text x="42" y="164" fill="#8b949e">正在自动发现 Codex、Claude Code、CC Switch、Qoder 等 Skill 目录...</text>
+    <text x="42" y="216" fill="#e6edf3">扫描完成</text>
+    <text x="42" y="268" fill="#79c0ff">112</text><text x="112" y="268" fill="#e6edf3">个不同 Skill 名称</text>
+    <text x="42" y="314" fill="#79c0ff">427</text><text x="112" y="314" fill="#e6edf3">个跨客户端物理目录</text>
+    <text x="42" y="360" fill="#d2a8ff">26</text><text x="98" y="360" fill="#e6edf3">组内容完全一致的实体副本</text>
+    <text x="42" y="406" fill="#ffa657">1</text><text x="70" y="406" fill="#e6edf3">组同名但内容分叉的实体目录</text>
+    <text x="42" y="452" fill="#7ee787">0</text><text x="70" y="452" fill="#e6edf3">个失效链接或孤立登记</text>
+    <text x="42" y="516" fill="#8b949e">已生成：</text><text x="180" y="516" fill="#e6edf3">skill-governance-output/inventory.json</text>
+    <text x="180" y="558" fill="#e6edf3">skill-governance-output/report.md</text>
+    <text x="42" y="612" fill="#8b949e">只读扫描 · 不删除 · 不迁移 · 不覆盖</text>
+  </g>
+</svg>

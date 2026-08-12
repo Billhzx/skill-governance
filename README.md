@@ -117,6 +117,10 @@ python skills/skill-governance/scripts/skill_governance.py scan
 
 不需要先编辑 JSON。默认输出：
 
+![Windows 多 Agent 环境真实扫描预览](assets/real-scan-preview.svg)
+
+上图来自一次真实的 Windows 多 Agent 只读扫描，个人路径已脱敏。扫描结果会同时生成：
+
 ```text
 skill-governance-output/
 ├── report.md       # 中文可读报告

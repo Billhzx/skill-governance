@@ -111,7 +111,11 @@ Python 3.11+ is recommended. Python 3.10 additionally requires `tomli`.
 python skills/skill-governance/scripts/skill_governance.py scan
 ```
 
-No JSON configuration is required. The command writes a readable Chinese `report.md` and a machine-readable `inventory.json` under `skill-governance-output/`. Generated inventories may contain absolute local paths and are ignored by Git by default. See the [redacted example report](examples/report.md).
+No JSON configuration is required.
+
+![Real scan preview from a Windows multi-agent environment](assets/real-scan-preview.svg)
+
+The preview above comes from a real read-only scan on Windows with personal paths redacted. The command writes a readable Chinese `report.md` and a machine-readable `inventory.json` under `skill-governance-output/`. Generated inventories may contain absolute local paths and are ignored by Git by default. See the [redacted example report](examples/report.md).
 
 ## Update and uninstall
 
