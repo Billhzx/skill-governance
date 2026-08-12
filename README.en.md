@@ -2,9 +2,55 @@
 
 [简体中文](README.md) | English
 
+> When Codex, Claude Code, CC Switch, and other agents all manage Skills, answer three questions first: What is the source of truth? Who may distribute it? Who decides whether it is enabled?
+
 An open-source Agent Skill for discovering local Skill assets, identifying their real ownership, generating a machine-readable inventory, and establishing recovery boundaries before cleanup or migration.
 
+## Why I built this
+
+This project grew out of a real cleanup of my local Agent Skills.
+
+At first, the problem looked simple: why did the same Skills appear under `.agents`, Codex, Claude Code, CC Switch, WorkBuddy, and Hermes? Some entries were physical directories, some were Junctions or symlinks, some were plugin caches, and some remained visible even though I had never installed them manually.
+
+The deeper problem was ownership:
+
+- I could not tell which copy should be edited.
+- Updates might belong to CC Switch, GitHub, a suite updater, or the Agent itself.
+- “Present on disk,” “visible to an Agent,” and “enabled by an Agent” were treated as the same state.
+- Same-name directories could be identical or silently divergent.
+- Built-in Skills, plugin caches, knowledge bases, and runtime data could be mistaken for duplicate installations.
+- Before deleting anything, there was no reliable way to tell what was reinstallable and what contained unique local changes.
+
+The first complete inventory found **105 physical Skills** on my machine. Codex had only **3 enabled**, while CC Switch managed **49**. The counts were not the real problem. The missing piece was a ledger explaining the source, owner, visibility, update method, and recovery policy for every asset.
+
+Skill Governance turns that cleanup process into a reusable workflow. It does not guess what to delete; it turns a confusing filesystem into verifiable evidence first.
+
+## Do you need it?
+
+| What you observe | What must actually be determined |
+|---|---|
+| The same Skill appears under several Agents | Is it a copy, a link, or divergent content? |
+| A Skill is available although you never installed it | Is it installer-derived, built in, or linked from elsewhere? |
+| CC Switch lists many Skills | Is it the source, a distributor, or only a metadata registry? |
+| A deleted Skill comes back | Which installer or updater owns it? |
+| You want one copy but are afraid to delete anything | What is recoverable, and what is unique local data? |
+| A new Agent or machine recreates the mess | Do you have a machine-readable inventory and stable ownership rules? |
+
+If you use more than one Agent, Skill installer, or distribution tool, this project is designed for that environment.
+
 It does not replace [CC Switch](https://github.com/farion1231/cc-switch), [Skillshare](https://github.com/runkids/skillshare), or [Skills Manager](https://github.com/xingkongliang/skills-manager). It governs the environment that exists when several installers, distributors, and agents operate at the same time.
+
+```text
+Discover every Skill path
+        ↓
+Classify physical sources, links, caches, and platform assets
+        ↓
+Resolve ownership, update manager, and Agent visibility
+        ↓
+Generate a machine-readable inventory
+        ↓
+Preview → explicit approval → precise changes → audit again
+```
 
 ## Capabilities
 
@@ -51,4 +97,3 @@ python /path/to/skill-creator/scripts/quick_validate.py skills/skill-governance
 ## License
 
 [MIT](LICENSE)
-
