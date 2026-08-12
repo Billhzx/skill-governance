@@ -1,0 +1,27 @@
+{
+  "schema_version": 1,
+  "canonical_roots": [
+    "{home}/.agents/skills"
+  ],
+  "client_roots": {
+    "cc_switch": "{home}/.codex-switcher/skills",
+    "claude": "{home}/.claude/skills",
+    "workbuddy": "{home}/.workbuddy/skills",
+    "hermes": "{home}/.hermes/skills"
+  },
+  "platform_managed_scopes": [
+    {"path": "{home}/.codex/skills/.system", "owner": "Codex"},
+    {"path": "{home}/.codex/plugins/cache", "owner": "Codex plugins"}
+  ],
+  "codex_configs": ["{home}/.codex/config.toml"],
+  "lock_files": ["{home}/.agents/.skill-lock.json"],
+  "cc_switch_databases": ["{home}/.cc-switch/cc-switch.db"],
+  "family_rules": [
+    {"prefix": "arkcli-", "family": "arkcli", "update_manager": "arkcli"},
+    {"prefix": "lark-", "family": "lark", "update_manager": "lark-cli"},
+    {"exact": "dbs", "family": "dbs", "update_manager": "dbs-update"},
+    {"prefix": "dbs-", "family": "dbs", "update_manager": "dbs-update"}
+  ],
+  "overrides_file": "./inventory-overrides.example.json"
+}
+

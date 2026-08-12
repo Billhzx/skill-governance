@@ -1,0 +1,20 @@
+{
+  "schema_version": 1,
+  "skills": {
+    "example-skill": {
+      "decision": "keep",
+      "reason": "Connects to a real tool used by the owner.",
+      "update_manager": "github_manual",
+      "repository": "owner/repository",
+      "skill_path": "skills/example-skill"
+    }
+  },
+  "supporting_assets": [
+    {
+      "name": "example-knowledge-base",
+      "path": "{home}/.agents/example/knowledge",
+      "owner": "example-suite",
+      "required_for_skill_install_or_update": false
+    }
+  ]
+}

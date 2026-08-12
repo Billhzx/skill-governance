@@ -1,0 +1,4 @@
+interface:
+  display_name: "Skill Governance"
+  short_description: "Audit and govern skills across multiple AI agents"
+  default_prompt: "Use $skill-governance to inventory my local agent skills and propose a safe cleanup plan."
