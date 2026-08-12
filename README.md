@@ -1,5 +1,8 @@
 # Skill Governance
 
+[![Tests](https://github.com/Billhzx/skill-governance/actions/workflows/test.yml/badge.svg)](https://github.com/Billhzx/skill-governance/actions/workflows/test.yml)
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
+
 简体中文 | [English](README.en.md)
 
 > 当 Codex、Claude Code、CC Switch 和其他 Agent 都在管理 Skill 时，先回答三个问题：谁是真源？谁有权分发？谁决定启用？
@@ -54,6 +57,7 @@
 
 ## 当前能力
 
+- 零配置自动发现常见 Agent，安装后直接让 Agent 执行扫描。
 - 跨平台扫描一个或多个个人 Skill 真源。
 - 识别实体目录、符号链接、Windows Junction/重解析点和失效链接。
 - 从 `SKILL.md` 读取真实名称，并对目录内容计算 SHA-256。
@@ -97,17 +101,38 @@ npx skills list -g --json
 
 结果中应只有一个名为 `skill-governance` 的全局条目，路径为 `~/.agents/skills/skill-governance`，来源为 `Billhzx/skill-governance`。
 
-## 直接运行扫描器
+## 第一次使用
+
+安装完成后，直接对 Agent 说：
+
+> 帮我盘点本机所有 Skill。
+
+Agent 会执行零配置扫描：
 
 需要 Python 3.11+；Python 3.10 可额外安装 `tomli`。
 
 ```powershell
-Copy-Item skills/skill-governance/references/config.example.json governance.json
-python skills/skill-governance/scripts/skill_governance.py inventory --config governance.json --output inventory.json
-python skills/skill-governance/scripts/skill_governance.py audit --inventory inventory.json
+python skills/skill-governance/scripts/skill_governance.py scan
 ```
 
-先修改 `governance.json` 里的路径和家族更新规则。输出可能包含本机绝对路径，公开 Issue 或日志前请脱敏。
+不需要先编辑 JSON。默认输出：
+
+```text
+skill-governance-output/
+├── report.md       # 中文可读报告
+└── inventory.json  # 机器可读完整台账
+```
+
+扫描器会自动探测 `.agents`、Codex、Claude Code、CC Switch、Cursor、Qoder、Gemini、OpenCode、Cline、Roo Code、Windsurf、Continue、Qwen Code、Kiro、WorkBuddy、Hermes、CodeBuddy、OpenClaw 等常见客户端。输出可能包含本机绝对路径，公开 Issue 或日志前请脱敏。
+
+一份脱敏的实际输出见 [`examples/report.md`](examples/report.md)。
+
+## 更新与卸载
+
+```bash
+npx skills update skill-governance -g
+npx skills remove skill-governance -g
+```
 
 ## 安全模型
 

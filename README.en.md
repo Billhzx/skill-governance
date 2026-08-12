@@ -1,5 +1,8 @@
 # Skill Governance
 
+[![Tests](https://github.com/Billhzx/skill-governance/actions/workflows/test.yml/badge.svg)](https://github.com/Billhzx/skill-governance/actions/workflows/test.yml)
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
+
 [简体中文](README.md) | English
 
 > When Codex, Claude Code, CC Switch, and other agents all manage Skills, answer three questions first: What is the source of truth? Who may distribute it? Who decides whether it is enabled?
@@ -54,6 +57,7 @@ Preview → explicit approval → precise changes → audit again
 
 ## Capabilities
 
+- Zero-configuration discovery of common Agent installations.
 - Scan one or more canonical personal Skill roots on Windows, macOS, or Linux.
 - Distinguish physical directories, symbolic links, Windows Junctions/reparse points, and broken links.
 - Read declared names from `SKILL.md` and calculate deterministic SHA-256 content hashes.
@@ -97,17 +101,24 @@ npx skills list -g --json
 
 There should be one global `skill-governance` entry at `~/.agents/skills/skill-governance`, sourced from `Billhzx/skill-governance`.
 
-## Run the scanner directly
+## First run
+
+After installation, ask your Agent: “Inventory all Skills on this machine.” It will run:
 
 Python 3.11+ is recommended. Python 3.10 additionally requires `tomli`.
 
 ```bash
-cp skills/skill-governance/references/config.example.json governance.json
-python skills/skill-governance/scripts/skill_governance.py inventory --config governance.json --output inventory.json
-python skills/skill-governance/scripts/skill_governance.py audit --inventory inventory.json
+python skills/skill-governance/scripts/skill_governance.py scan
 ```
 
-Edit paths and manager-family rules before running. Generated inventories may contain absolute local paths and are ignored by Git by default.
+No JSON configuration is required. The command writes a readable Chinese `report.md` and a machine-readable `inventory.json` under `skill-governance-output/`. Generated inventories may contain absolute local paths and are ignored by Git by default. See the [redacted example report](examples/report.md).
+
+## Update and uninstall
+
+```bash
+npx skills update skill-governance -g
+npx skills remove skill-governance -g
+```
 
 ## Safety model
 

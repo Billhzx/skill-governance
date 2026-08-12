@@ -9,24 +9,17 @@ description: 发现、盘点并安全治理 Codex、Claude Code、CC Switch、Wo
 
 ## 工作流程
 
-1. 定位可能的 Skill 根目录和配置文件。不得假设每个目录都是一份独立副本。
-2. 把 `references/config.example.json` 复制到当前任务目录，仅调整已经在本机核实过的路径和管理器家族规则。
-3. 生成资产台账：
+1. 直接运行零配置扫描。不得要求普通用户先编辑配置文件：
 
    ```powershell
-   python scripts/skill_governance.py inventory --config <config.json> --output <inventory.json>
+   python scripts/skill_governance.py scan
    ```
 
-4. 执行确定性审计：
-
-   ```powershell
-   python scripts/skill_governance.py audit --inventory <inventory.json>
-   ```
-
-5. 按照 `references/governance.md` 对每项发现进行分类。区分实体真源、链接、生成缓存、平台托管资产和客户端自有目录。
-6. 展示拟处理的精确目标、所有权、恢复等级以及预期变更后状态。用户明确批准该清单前不得执行变更。
-7. 获得批准后，先解除客户端派生项，再修改或删除实体真源。全程使用同一种 Shell，并验证解析后的目标路径。
-8. 重新生成台账并再次审计，报告仍然存在的警告和残留。
+2. 读取 `skill-governance-output/report.md`，并把摘要、优先处理项及输出路径告诉用户。需要精确证据时再读取 `inventory.json`。
+3. 按照 `references/governance.md` 对每项发现进行分类。区分实体真源、链接、生成缓存、平台托管资产和客户端自有目录。
+4. 展示拟处理的精确目标、所有权、恢复等级以及预期变更后状态。用户明确批准该清单前不得执行变更。
+5. 获得批准后，先解除客户端派生项，再修改或删除实体真源。全程使用同一种 Shell，并验证解析后的目标路径。
+6. 重新运行 `scan`，报告仍然存在的警告和残留。
 
 ## 安全规则
 
@@ -44,5 +37,4 @@ description: 发现、盘点并安全治理 Codex、Claude Code、CC Switch、Wo
 
 - 涉及所有权、恢复等级和变更规则时，读取 `references/governance.md`。
 - 适配新的工具或目录结构时，读取 `references/configuration.md`。
-- 从 `references/config.example.json` 开始配置；不得把特定机器的绝对路径写入本 Skill。
 - 使用 `scripts/skill_governance.py` 生成确定性的盘点和审计结果。

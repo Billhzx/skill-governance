@@ -1,4 +1,14 @@
-# 扫描器配置
+# 自动发现范围
+
+默认 `scan` 命令不需要配置文件。它会在用户主目录下探测以下常见客户端：
+
+`.agents`、Codex、Claude Code、CC Switch、Cursor、Qoder（兼容 `.qorder`）、Gemini、OpenCode、Cline、Roo Code、Windsurf、Continue、Qwen Code、Kiro、GitHub Copilot、WorkBuddy、Hermes、CodeBuddy、OpenClaw、AiderDesk、Augment、Goose、Zencoder 和 Trae。
+
+不存在的目录会自动跳过。新增客户端时，应扩充脚本中的 `AGENT_SKILL_PATHS` 注册表并增加测试。
+
+## 高级内部配置
+
+以下配置接口保留给开发者、测试夹具及特殊目录布局，不属于普通用户的首次使用路径。
 
 所有路径均支持 `~`、环境变量和 `{home}`。相对路径以配置文件所在目录为基准解析。
 

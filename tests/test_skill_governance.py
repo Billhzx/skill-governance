@@ -26,6 +26,51 @@ def make_skill(root: Path, name: str, body: str = "instructions") -> Path:
 
 
 class GovernanceTests(unittest.TestCase):
+    def test_zero_config_scan_discovers_multiple_agents_and_writes_both_outputs(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            base = Path(tmp)
+            make_skill(base / ".agents" / "skills", "shared")
+            make_skill(base / ".qoder" / "skills", "qoder-only")
+            make_skill(base / ".cursor" / "skills", "cursor-only")
+            output = base / "output"
+
+            data, inventory_path, report_path = MODULE.run_scan(output, home=base)
+
+            self.assertTrue(inventory_path.is_file())
+            self.assertTrue(report_path.is_file())
+            self.assertEqual(data["summary"]["skill_count"], 3)
+            self.assertIn("qoder", data["authority"]["client_roots"])
+            self.assertIn("cursor", data["authority"]["client_roots"])
+            report = report_path.read_text(encoding="utf-8")
+            self.assertIn("# Skill 治理扫描报告", report)
+            self.assertIn("本次扫描只读取", report)
+
+    def test_agent_registry_includes_broad_common_clients(self):
+        expected = {
+            "universal", "codex", "claude", "cursor", "qoder", "qorder_legacy",
+            "gemini", "opencode", "cline", "roo_code", "windsurf", "continue",
+            "qwen_code", "kiro", "workbuddy", "hermes", "codebuddy", "openclaw",
+        }
+        self.assertTrue(expected.issubset(MODULE.AGENT_SKILL_PATHS))
+
+    def test_multiple_physical_sources_are_split_by_content_hash(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            base = Path(tmp)
+            first = base / "first"
+            second = base / "second"
+            third = base / "third"
+            make_skill(first, "same", "one")
+            make_skill(second, "same", "one")
+            make_skill(first, "forked", "one")
+            make_skill(third, "forked", "two")
+            config = base / "config.json"
+            config.write_text(json.dumps({"canonical_roots": [str(first), str(second), str(third)]}), encoding="utf-8")
+
+            data = MODULE.build_inventory(config)
+
+            self.assertEqual([item["name"] for item in data["integrity"]["exact_physical_duplicates"]], ["same"])
+            self.assertEqual([item["name"] for item in data["integrity"]["divergent_physical_instances"]], ["forked"])
+
     def test_inventory_detects_link_divergence_and_optional_metadata(self):
         with tempfile.TemporaryDirectory() as tmp:
             base = Path(tmp)

@@ -21,6 +21,42 @@ except ModuleNotFoundError:  # pragma: no cover - Python 3.10 compatibility
     import tomli as tomllib  # type: ignore[no-redef]
 
 
+AGENT_SKILL_PATHS = {
+    "universal": ".agents/skills",
+    "codex": ".codex/skills",
+    "claude": ".claude/skills",
+    "cc_switch": ".codex-switcher/skills",
+    "cursor": ".cursor/skills",
+    "qoder": ".qoder/skills",
+    "qorder_legacy": ".qorder/skills",
+    "gemini": ".gemini/skills",
+    "opencode": ".config/opencode/skills",
+    "cline": ".cline/skills",
+    "roo_code": ".roo/skills",
+    "windsurf": ".codeium/windsurf/skills",
+    "continue": ".continue/skills",
+    "qwen_code": ".qwen/skills",
+    "kiro": ".kiro/skills",
+    "github_copilot": ".copilot/skills",
+    "workbuddy": ".workbuddy/skills",
+    "hermes": ".hermes/skills",
+    "codebuddy": ".codebuddy/skills",
+    "openclaw": ".openclaw/skills",
+    "aider_desk": ".aider-desk/skills",
+    "augment": ".augment/skills",
+    "goose": ".config/goose/skills",
+    "zencoder": ".zencoder/skills",
+    "trae": ".trae/skills",
+}
+
+DEFAULT_FAMILY_RULES = [
+    {"prefix": "arkcli-", "family": "arkcli", "update_manager": "arkcli"},
+    {"prefix": "lark-", "family": "lark", "update_manager": "lark-cli"},
+    {"exact": "dbs", "family": "dbs", "update_manager": "dbs-update"},
+    {"prefix": "dbs-", "family": "dbs", "update_manager": "dbs-update"},
+]
+
+
 def load_json(path: Path, default: Any = None) -> Any:
     if not path.exists():
         return default
@@ -207,11 +243,45 @@ def recovery_policy(repository: str | None, manager: str) -> str:
     return "protect_or_export_before_delete"
 
 
+def discover_config(home: Path | None = None) -> dict[str, Any]:
+    """Build a zero-configuration inventory profile from common Agent locations."""
+    home = (home or Path.home()).resolve()
+    all_roots = {name: home / relative for name, relative in AGENT_SKILL_PATHS.items()}
+    existing = {name: path for name, path in all_roots.items() if path.is_dir()}
+    preferred_names = ["universal", "codex", "claude"]
+    ordered = [existing.pop(name) for name in preferred_names if name in existing]
+    ordered.extend(path for _, path in sorted(existing.items()))
+    if not ordered:
+        ordered = [all_roots["universal"]]
+    return {
+        "schema_version": 1,
+        "canonical_roots": [str(path) for path in ordered],
+        "client_roots": {name: str(path) for name, path in all_roots.items()},
+        "platform_managed_scopes": [
+            {"path": str(home / ".codex/skills/.system"), "owner": "Codex"},
+            {"path": str(home / ".codex/plugins/cache"), "owner": "Codex plugins"},
+        ],
+        "codex_configs": [str(home / ".codex/config.toml")],
+        "lock_files": [str(home / ".agents/.skill-lock.json")],
+        "cc_switch_databases": [str(home / ".cc-switch/cc-switch.db")],
+        "family_rules": DEFAULT_FAMILY_RULES,
+    }
+
+
+def build_inventory_from_config(config: dict[str, Any], base: Path, configuration: str) -> dict[str, Any]:
+    if not isinstance(config, dict):
+        raise ValueError("configuration must be a JSON object")
+    return _build_inventory(config, base, configuration)
+
+
 def build_inventory(config_path: Path) -> dict[str, Any]:
     config = load_json(config_path)
     if not isinstance(config, dict):
         raise ValueError("configuration must be a JSON object")
-    base = config_path.parent
+    return _build_inventory(config, config_path.parent, str(config_path.resolve()))
+
+
+def _build_inventory(config: dict[str, Any], base: Path, configuration: str) -> dict[str, Any]:
     warnings: list[str] = []
     roots = [expand_path(item, base) for item in config.get("canonical_roots", [])]
     if not roots:
@@ -236,7 +306,7 @@ def build_inventory(config_path: Path) -> dict[str, Any]:
         if not root.exists():
             continue
         for entry in root.iterdir():
-            if entry.is_dir() and (entry / "SKILL.md").is_file():
+            if entry.name != ".system" and entry.is_dir() and not is_link_like(entry) and (entry / "SKILL.md").is_file():
                 sources_by_name.setdefault(entry.name, []).append(entry)
 
     assets: list[dict[str, Any]] = []
@@ -295,8 +365,17 @@ def build_inventory(config_path: Path) -> dict[str, Any]:
 
     divergent: list[dict[str, Any]] = []
     broken: list[dict[str, str]] = []
+    exact_physical_duplicates: list[dict[str, Any]] = []
+    divergent_physical_instances: list[dict[str, Any]] = []
     for asset in assets:
         canonical_hashes = {item["content_sha256"] for item in asset["physical_sources"]}
+        if len(asset["physical_sources"]) > 1:
+            physical = asset["physical_sources"]
+            finding = {"name": asset["name"], "paths": [item["path"] for item in physical]}
+            if len(canonical_hashes) == 1:
+                exact_physical_duplicates.append(finding)
+            else:
+                divergent_physical_instances.append({**finding, "hash_count": len(canonical_hashes)})
         for client, state in asset["clients"].items():
             if state["kind"] == "broken_link_or_reparse_point":
                 broken.append({"name": asset["name"], "client": client, "path": state["path"]})
@@ -311,7 +390,7 @@ def build_inventory(config_path: Path) -> dict[str, Any]:
     return {
         "schema_version": 1,
         "generated_at": datetime.now(timezone.utc).astimezone().isoformat(timespec="seconds"),
-        "configuration": str(config_path.resolve()),
+        "configuration": configuration,
         "authority": {"canonical_roots": [str(path) for path in roots], "client_roots": {k: str(v) for k, v in clients.items()}},
         "summary": {
             "skill_count": len(assets), "physical_source_count": sum(len(a["physical_sources"]) for a in assets),
@@ -325,6 +404,8 @@ def build_inventory(config_path: Path) -> dict[str, Any]:
             "cc_switch_rows_without_physical_source": sorted(set(cc_rows) - known),
             "broken_links": broken,
             "same_name_noncanonical_instances": divergent,
+            "exact_physical_duplicates": exact_physical_duplicates,
+            "divergent_physical_instances": divergent_physical_instances,
             "multiple_canonical_sources": sorted(name for name, paths in sources_by_name.items() if len(paths) > 1),
             "assets_without_upstream_repository": sorted(a["name"] for a in assets if not a["upstream"]["repository"]),
             "unreviewed_assets": sorted(a["name"] for a in assets if a["decision"]["status"] == "unreviewed"),
@@ -351,7 +432,8 @@ def audit_inventory(data: dict[str, Any]) -> tuple[int, dict[str, Any]]:
     }
     warning_fields = {
         "same_name_noncanonical_instances": "same-name noncanonical instances require review",
-        "multiple_canonical_sources": "skills exist in multiple canonical roots",
+        "exact_physical_duplicates": "same-name physical directories have identical content",
+        "divergent_physical_instances": "same-name physical directories have divergent content",
         "assets_without_upstream_repository": "skills have no declared upstream repository",
         "unreviewed_assets": "skills have no human governance decision",
     }
@@ -371,9 +453,98 @@ def audit_inventory(data: dict[str, Any]) -> tuple[int, dict[str, Any]]:
     return (1 if errors else 0), report
 
 
+def render_report(data: dict[str, Any]) -> str:
+    integrity = data.get("integrity", {})
+    summary = data.get("summary", {})
+    divergent = integrity.get("same_name_noncanonical_instances", [])
+    exact = integrity.get("exact_physical_duplicates", []) + [item for item in divergent if item.get("matches_canonical_content")]
+    forks = integrity.get("divergent_physical_instances", []) + [item for item in divergent if not item.get("matches_canonical_content")]
+    errors = sum(len(integrity.get(key, [])) for key in (
+        "missing_codex_paths", "stale_lock_entries", "cc_switch_rows_without_physical_source", "broken_links"
+    ))
+    lines = [
+        "# Skill 治理扫描报告",
+        "",
+        f"> 生成时间：{data.get('generated_at', 'unknown')}  ",
+        "> 本次扫描只读取文件、配置和元数据，没有修改任何 Skill。",
+        "",
+        "## 扫描摘要",
+        "",
+        "| 项目 | 数量 |",
+        "|---|---:|",
+        f"| 发现的 Skill | {summary.get('skill_count', 0)} |",
+        f"| 实体目录 | {summary.get('physical_source_count', 0)} |",
+        f"| 客户端独立 Skill | {summary.get('client_only_count', 0)} |",
+        f"| 内容完全一致的同名实例 | {len(exact)} |",
+        f"| 内容分叉的同名实例 | {len(forks)} |",
+        f"| 失效或孤立记录 | {errors} |",
+        f"| Codex 已启用 | {summary.get('codex_enabled_count', 0)} |",
+        f"| CC Switch 已登记 | {summary.get('cc_switch_managed_count', 0)} |",
+        "",
+        "## 优先处理",
+        "",
+    ]
+    priorities = [
+        ("失效链接", integrity.get("broken_links", [])),
+        ("Codex 失效路径", integrity.get("missing_codex_paths", [])),
+        ("CC Switch 孤立记录", integrity.get("cc_switch_rows_without_physical_source", [])),
+        ("同名内容分叉", forks),
+    ]
+    found = False
+    for label, items in priorities:
+        if items:
+            found = True
+            lines.extend([f"### {label}", "", *[f"- `{_display_item(item)}`" for item in items], ""])
+    if not found:
+        lines.extend(["没有发现需要立即处理的完整性错误。", ""])
+    lines.extend([
+        "## 恢复策略分布",
+        "",
+    ])
+    policies = Counter(asset.get("ownership", {}).get("recovery_policy", "unknown") for asset in data.get("assets", []))
+    policy_labels = {
+        "reinstallable_by_declared_manager": "可由声明的管理器重新安装",
+        "verify_upstream_and_local_changes_before_direct_delete": "删除前核实上游与本地差异",
+        "protect_or_export_before_delete": "删除前必须保护或导出",
+    }
+    for policy, count in sorted(policies.items()):
+        lines.append(f"- {policy_labels.get(policy, policy)}：**{count}**")
+    lines.extend([
+        "",
+        "## 下一步",
+        "",
+        "1. 先查看上面的失效记录和内容分叉。",
+        "2. 任何删除或迁移前，要求 Agent 展示精确路径、所有权和恢复等级。",
+        "3. 用户明确确认后再执行变更，并在完成后重新扫描。",
+        "",
+        "完整机器可读数据见同目录下的 `inventory.json`。",
+        "",
+    ])
+    return "\n".join(lines)
+
+
+def _display_item(item: Any) -> str:
+    if isinstance(item, dict):
+        return str(item.get("path") or item.get("name") or json.dumps(item, ensure_ascii=False))
+    return str(item)
+
+
+def run_scan(output_dir: Path, home: Path | None = None) -> tuple[dict[str, Any], Path, Path]:
+    config = discover_config(home)
+    data = build_inventory_from_config(config, Path.cwd(), "auto-discovered")
+    output_dir.mkdir(parents=True, exist_ok=True)
+    inventory_path = output_dir / "inventory.json"
+    report_path = output_dir / "report.md"
+    inventory_path.write_text(json.dumps(data, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
+    report_path.write_text(render_report(data), encoding="utf-8")
+    return data, inventory_path, report_path
+
+
 def main(argv: list[str] | None = None) -> int:
     parser = argparse.ArgumentParser(description=__doc__)
     sub = parser.add_subparsers(dest="command", required=True)
+    scan = sub.add_parser("scan", help="auto-discover Agent Skills and write JSON + Markdown reports")
+    scan.add_argument("--output-dir", type=Path, default=Path("skill-governance-output"))
     inventory = sub.add_parser("inventory", help="generate a read-only JSON inventory")
     inventory.add_argument("--config", type=Path, required=True)
     inventory.add_argument("--output", type=Path, required=True)
@@ -381,6 +552,14 @@ def main(argv: list[str] | None = None) -> int:
     audit.add_argument("--inventory", type=Path, required=True)
     args = parser.parse_args(argv)
     try:
+        if args.command == "scan":
+            data, inventory_path, report_path = run_scan(args.output_dir.resolve())
+            print(json.dumps({
+                "summary": data["summary"],
+                "inventory": str(inventory_path),
+                "report": str(report_path),
+            }, ensure_ascii=False))
+            return 0
         if args.command == "inventory":
             data = build_inventory(args.config.resolve())
             args.output.parent.mkdir(parents=True, exist_ok=True)

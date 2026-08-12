@@ -5,4 +5,4 @@ __pycache__/
 inventory.json
 governance.json
 dist/
-
+skill-governance-output/
