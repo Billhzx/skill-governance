@@ -1,24 +1,23 @@
-# Scanner configuration
+# 扫描器配置
 
-All paths accept `~`, environment variables, and `{home}`. Relative paths resolve from the configuration file directory.
+所有路径均支持 `~`、环境变量和 `{home}`。相对路径以配置文件所在目录为基准解析。
 
-## Main fields
+## 主要字段
 
-- `canonical_roots`: physical roots that are intended to hold user-owned Skills. The first root is treated as the preferred authority when comparing client entries.
-- `client_roots`: named Agent or distributor directories. Entries are inspected as links or physical directories.
-- `platform_managed_scopes`: paths reported for context but excluded from personal assets.
-- `codex_configs`: optional TOML files containing `skills.config` entries with `path` and `enabled`.
-- `lock_files`: optional JSON files whose `skills` object contains source metadata.
-- `cc_switch_databases`: optional SQLite databases. The built-in adapter reads a `skills` table when compatible columns exist.
-- `family_rules`: ordered prefix or exact-name rules assigning a family and update manager.
-- `overrides_file`: optional JSON decisions keyed by Skill directory name.
+- `canonical_roots`：预期存放用户实体 Skill 的根目录。比较客户端条目时，第一个根目录优先作为唯一真源。
+- `client_roots`：按名称登记的 Agent 或分发器目录。扫描器会判断其中的条目是链接还是实体目录。
+- `platform_managed_scopes`：只作为背景报告、不计入个人资产的路径。
+- `codex_configs`：可选的 TOML 文件，其中包含带有 `path` 和 `enabled` 的 `skills.config` 条目。
+- `lock_files`：可选的 JSON 文件，其中 `skills` 对象保存来源元数据。
+- `cc_switch_databases`：可选的 SQLite 数据库。内置适配器会在字段兼容时读取 `skills` 表。
+- `family_rules`：按顺序执行的前缀或精确名称规则，用于指定 Skill 家族及更新管理器。
+- `overrides_file`：可选的人工治理结论 JSON，以 Skill 目录名作为键。
 
-Missing optional files are reported as warnings, not fatal errors. An existing configured root that cannot be read is an error.
+可选文件缺失只产生警告，不导致扫描失败。已经存在但并非目录、或者无法读取的真源配置属于错误。
 
-## Exit codes
+## 退出码
 
-- `inventory`: `0` when output was generated; `2` for invalid configuration or unreadable required roots.
-- `audit`: `0` with no errors, `1` with integrity errors, `2` for invalid input.
+- `inventory`：成功生成台账时返回 `0`；配置无效或必需根目录不可读时返回 `2`。
+- `audit`：没有完整性错误时返回 `0`，存在错误时返回 `1`，输入无法解析时返回 `2`。
 
-Audit warnings include divergent same-name instances, missing upstream metadata, and assets without a human decision. Errors include broken configured links, missing registered Codex paths, and distributor rows with no physical source.
-
+审计警告包括同名分叉、上游元数据缺失和没有人工治理结论的资产。审计错误包括失效链接、Codex 已登记但不存在的路径，以及分发器数据库中没有对应实体真源的记录。

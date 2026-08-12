@@ -1,5 +1,7 @@
 # Skill Governance
 
+简体中文 | [English](README.en.md)
+
 一个面向多 Agent 本地环境的开源 Skill：发现 Skill 资产、识别真实所有权、生成机器可读台账，并在清理或迁移前建立恢复边界。
 
 它不是新的 Skill 下载器，也不取代 [CC Switch](https://github.com/farion1231/cc-switch)、[Skillshare](https://github.com/runkids/skillshare) 或 [Skills Manager](https://github.com/xingkongliang/skills-manager)。它解决的是这些工具同时存在以后出现的问题：哪一份是真源、哪些只是链接、谁负责更新、哪个 Agent 实际启用，以及删除后能否恢复。
@@ -23,7 +25,7 @@
 npx skills add Billhzx/skill-governance --skill skill-governance
 ```
 
-仓库发布前，也可以直接把该目录链接或复制到 Agent 的 Skill 目录。
+也可以直接把该目录链接或复制到 Agent 的 Skill 目录。
 
 ## 直接运行扫描器
 

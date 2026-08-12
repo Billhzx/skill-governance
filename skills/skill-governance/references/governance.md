@@ -1,43 +1,45 @@
-# Governance model
+# 治理模型
 
-## Asset classes
+## 资产分类
 
-| Class | Meaning | Default action |
+| 分类 | 含义 | 默认处理方式 |
 |---|---|---|
-| Canonical source | User-owned physical Skill directory | Preserve unless explicitly selected |
-| Derived link | Symlink, Junction, or reparse point targeting a canonical source | Manage as distribution state |
-| Divergent instance | Same name in another physical directory with different content | Investigate owner and local changes |
-| Exact physical duplicate | Same name and content hash in multiple physical directories | Consolidation candidate after ownership check |
-| Client-owned asset | Skill visible only inside one tool | Let that tool or installer own updates |
-| Platform-managed scope | Built-in Skill or plugin cache | Exclude from personal inventory |
-| Supporting asset | Knowledge, reports, or runtime data without `SKILL.md` | Do not classify as a duplicate Skill |
+| 唯一真源 | 用户拥有的实体 Skill 目录 | 除非用户明确选中，否则保留 |
+| 派生链接 | 指向唯一真源的符号链接、Junction 或重解析点 | 作为分发状态管理 |
+| 同名分叉实例 | 另一个实体目录中存在同名但内容不同的 Skill | 核实所有者和本地修改 |
+| 完全重复实体 | 多个实体目录的名称和内容哈希均相同 | 核实所有权后可考虑收敛 |
+| 客户端自有资产 | 只在某一个工具内部可见的 Skill | 由该工具或安装器负责更新 |
+| 平台托管范围 | 内置 Skill 或插件缓存 | 排除在个人资产清单之外 |
+| 配套资产 | 不含 `SKILL.md` 的知识库、报告或运行数据 | 不得认定为重复 Skill |
 
-## Ownership layers
+## 四层所有权
 
-Keep these decisions independent:
+必须分别判断以下四项，不得混为一谈：
 
-1. **Physical authority:** where editable personal Skill content lives.
-2. **Distribution owner:** what creates links or copies for each client.
-3. **Update manager:** Git, a suite updater, an installer, or manual maintenance.
-4. **Enablement owner:** the individual Agent configuration deciding whether a visible Skill is active.
+1. **实体所有权：** 可编辑的个人 Skill 内容实际存放在哪里。
+2. **分发所有权：** 谁负责为各个客户端创建链接或副本。
+3. **更新所有权：** 由 Git、套件更新器、安装器还是人工维护负责更新。
+4. **启用所有权：** 由哪个 Agent 的配置决定可见 Skill 是否启用。
 
-One product does not need to own all four layers.
+不要求某一个产品同时拥有全部四层权力。
 
-## Recovery classes
+## 恢复等级
 
-- `reinstallable_by_declared_manager`: verify the manager and remote source still work before removal.
-- `verify_upstream_and_local_changes_before_direct_delete`: compare the local hash or Git diff with upstream.
-- `protect_or_export_before_delete`: preserve the directory, an archive, or a content hash before removal.
+- `reinstallable_by_declared_manager`：删除前验证声明的管理器和远端来源仍然可用。
+- `verify_upstream_and_local_changes_before_direct_delete`：删除前比较本地哈希或 Git 差异与上游版本。
+- `protect_or_export_before_delete`：删除前保留目录、导出归档或至少保存内容哈希证据。
 
-## Mutation sequence
+这些英文值是机器可读协议字段，展示给用户时应同时给出中文解释。
 
-1. Show exact paths and recovery classes.
-2. Resolve links and reparse points without following them recursively.
-3. Remove derived links first.
-4. Update Agent enablement configuration.
-5. Update distributor metadata or database records.
-6. Change physical sources last.
-7. Regenerate inventory and audit the final state.
+## 变更顺序
 
-Never turn audit findings directly into deletion commands. The inventory is evidence, not authorization.
+1. 展示精确路径和恢复等级。
+2. 解析链接及重解析点，但不得递归跟随它们处理实体内容。
+3. 先移除派生链接。
+4. 更新 Agent 启用配置。
+5. 更新分发器的元数据或数据库记录。
+6. 最后变更实体真源。
+7. 重新生成台账并审计最终状态。
+
+不得把审计发现直接转换成删除命令。台账是证据，不是授权。
 

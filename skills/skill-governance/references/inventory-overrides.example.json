@@ -3,7 +3,7 @@
   "skills": {
     "example-skill": {
       "decision": "keep",
-      "reason": "Connects to a real tool used by the owner.",
+      "reason": "连接用户正在使用的真实工具。",
       "update_manager": "github_manual",
       "repository": "owner/repository",
       "skill_path": "skills/example-skill"
@@ -11,7 +11,7 @@
   },
   "supporting_assets": [
     {
-      "name": "example-knowledge-base",
+      "name": "示例知识库",
       "path": "{home}/.agents/example/knowledge",
       "owner": "example-suite",
       "required_for_skill_install_or_update": false
