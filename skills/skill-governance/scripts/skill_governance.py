@@ -465,7 +465,7 @@ def render_report(data: dict[str, Any]) -> str:
     lines = [
         "# Skill 治理扫描报告",
         "",
-        f"> 生成时间：{data.get('generated_at', 'unknown')}  ",
+        f"> 生成时间：{data.get('generated_at', 'unknown')}",
         "> 本次扫描只读取文件、配置和元数据，没有修改任何 Skill。",
         "",
         "## 扫描摘要",
