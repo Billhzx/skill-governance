@@ -65,13 +65,37 @@
 
 ## 安装 Skill
 
-仓库中的可安装 Skill 位于 `skills/skill-governance`，标准入口 `SKILL.md` 使用中文。兼容 `npx skills` 的 Agent 可执行：
+仓库中的可安装 Skill 位于 `skills/skill-governance`，标准入口 `SKILL.md` 使用中文。
+
+### 推荐：只安装到 Codex
 
 ```bash
-npx skills add Billhzx/skill-governance --skill skill-governance
+npx skills add Billhzx/skill-governance -g --skill skill-governance --agent codex
 ```
 
-也可以直接把该目录链接或复制到 Agent 的 Skill 目录。
+`-g` 很重要：它把 Skill 安装到用户级真源 `~/.agents/skills/skill-governance`。如果省略，安装器默认使用项目级目录，离开当前项目后 Agent 可能无法识别。
+
+### 安装到多个 Agent
+
+```bash
+npx skills add Billhzx/skill-governance -g --skill skill-governance
+```
+
+在交互界面中选择需要使用它的 Agent；存在多个目标目录时，选择推荐的 **Symlink** 模式。不要使用 `--copy`，否则会为各 Agent 创建彼此独立的副本。也不建议使用 `--all`，除非确实希望把它分发给机器上检测到的全部 Agent。
+
+### 会不会重复安装
+
+不会因为本仓库结构而出现两个同名 Skill。发布前使用官方 CLI 验证：仓库只会发现一个 `skill-governance`。在隔离环境中连续执行两次相同的全局安装命令，最终仍然只有一个实体目录和一条全局安装记录。
+
+如果机器上已经存在其他工具手工创建的同名目录，安装器会进入覆盖确认流程。此时不要使用 `-y` 跳过确认；应先核实原目录的来源和本地修改。
+
+安装后可验证：
+
+```bash
+npx skills list -g --json
+```
+
+结果中应只有一个名为 `skill-governance` 的全局条目，路径为 `~/.agents/skills/skill-governance`，来源为 `Billhzx/skill-governance`。
 
 ## 直接运行扫描器
 

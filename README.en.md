@@ -65,11 +65,37 @@ Preview → explicit approval → precise changes → audit again
 
 ## Install
 
+### Recommended: Codex only
+
 ```bash
-npx skills add Billhzx/skill-governance --skill skill-governance
+npx skills add Billhzx/skill-governance -g --skill skill-governance --agent codex
 ```
 
 The installable Skill is under `skills/skill-governance`. Its operational instructions and reference documentation are written in Simplified Chinese.
+
+The `-g` flag is important: it installs the Skill into the user-level source at `~/.agents/skills/skill-governance`. Without it, the CLI defaults to project scope and the Skill may not be visible after leaving that project.
+
+### Multiple Agents
+
+```bash
+npx skills add Billhzx/skill-governance -g --skill skill-governance
+```
+
+Select only the Agents that need it. When several target directories are involved, choose the recommended **Symlink** mode. Avoid `--copy`, which deliberately creates independent copies, and avoid `--all` unless every detected Agent should receive the Skill.
+
+### Duplicate-install behavior
+
+The repository is discovered as exactly one Skill. In an isolated end-to-end test, running the same global installation twice still produced one physical directory and one global installation record.
+
+If another tool has already created a same-name directory, do not add `-y` to bypass the overwrite prompt. Inspect that directory's source and local changes first.
+
+Verify the result with:
+
+```bash
+npx skills list -g --json
+```
+
+There should be one global `skill-governance` entry at `~/.agents/skills/skill-governance`, sourced from `Billhzx/skill-governance`.
 
 ## Run the scanner directly
 
